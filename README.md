@@ -13,25 +13,86 @@ npx cap sync
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
+* [`configure(...)`](#configure)
+* [`getConfiguration()`](#getconfiguration)
+* [`getBiometricMethod()`](#getbiometricmethod)
+* [Interfaces](#interfaces)
+* [Enums](#enums)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### echo(...)
+### configure(...)
 
 ```typescript
-echo(options: { value: string; }) => Promise<{ value: string; }>
+configure(options?: BiometricLockConfiguration | undefined) => Promise<void>
 ```
 
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
+Set plugin configuration
 
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
+| Param         | Type                                                                              |
+| ------------- | --------------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#biometriclockconfiguration">BiometricLockConfiguration</a></code> |
+
+**Since:** 1.0.0
 
 --------------------
+
+
+### getConfiguration()
+
+```typescript
+getConfiguration() => Promise<BiometricLockConfiguration>
+```
+
+Get plugin configuration
+
+**Returns:** <code>Promise&lt;<a href="#biometriclockconfiguration">BiometricLockConfiguration</a>&gt;</code>
+
+**Since:** 1.0.0
+
+--------------------
+
+
+### getBiometricMethod()
+
+```typescript
+getBiometricMethod() => Promise<BiometricMethod>
+```
+
+Get primary biometric method
+
+**Returns:** <code>Promise&lt;<a href="#biometricmethod">BiometricMethod</a>&gt;</code>
+
+**Since:** 1.0.0
+
+--------------------
+
+
+### Interfaces
+
+
+#### BiometricLockConfiguration
+
+Persisted configuration of the plugin
+
+| Prop                   | Type                 | Description                  |
+| ---------------------- | -------------------- | ---------------------------- |
+| **`enabled`**          | <code>boolean</code> |                              |
+| **`timeoutInSeconds`** | <code>number</code>  |                              |
+| **`appName`**          | <code>string</code>  |                              |
+| **`retryButtonColor`** | <code>string</code>  | Hex color code e.g. "00ffee" |
+
+
+### Enums
+
+
+#### BiometricMethod
+
+| Members      |
+| ------------ |
+| **`FaceID`** |
 
 </docgen-api>

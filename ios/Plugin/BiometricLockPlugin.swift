@@ -9,10 +9,31 @@ import Capacitor
 public class BiometricLockPlugin: CAPPlugin {
     private let implementation = BiometricLock()
 
-    @objc func echo(_ call: CAPPluginCall) {
-        let value = call.getString("value") ?? ""
-        call.resolve([
-            "value": implementation.echo(value)
-        ])
+    @objc func configure(_ call: CAPPluginCall) {
+        guard let options = call.options else {
+            call.reject("Options are missing")
+            return
+        }
+
+        do {
+            let configData = try JSONSerialization.data(withJSONObject: options, options: [])
+            let config = try JSONDecoder().decode(BiometricLockConfiguration.self, from: configData)
+
+            // Implement the configuration logic here using BiometricLockConfiguration
+            implementation.configure(with: config)
+            call.resolve()
+        } catch {
+            call.reject("Error decoding options: \(error.localizedDescription)")
+        }
+    }
+
+    @objc func getConfiguration(_ call: CAPPluginCall) {
+        let config = implementation.getConfiguration()
+        call.resolve(["configuration": config])
+    }
+
+    @objc func getBiometricMethod(_ call: CAPPluginCall) {
+        let method = implementation.getBiometricMethod()
+        call.resolve(["biometricMethod": method])
     }
 }
