@@ -15,7 +15,7 @@ export class BiometricLockWeb extends WebPlugin implements BiometricLockPlugin {
     throw this.unimplemented('Not implemented on web.');
   }
 
-  async getBiometricMethod(): Promise<BiometricMethod> {
+  async getBiometricMethod(): Promise<{ biometricMethod: BiometricMethod }> {
     throw this.unimplemented('Not implemented on web.');
   }
 }

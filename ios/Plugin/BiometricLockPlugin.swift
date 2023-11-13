@@ -7,33 +7,54 @@ import Capacitor
  */
 @objc(BiometricLockPlugin)
 public class BiometricLockPlugin: CAPPlugin {
-    private let implementation = BiometricLock()
+    private var implementation: BiometricLock?
+
+    override public func load() {
+        self.implementation = BiometricLock(plugin: self)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleDidBecomeActiveNotification),
+                                               name: UIApplication.didBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleDidEnterBackgroundNotification),
+                                               name: UIApplication.didEnterBackgroundNotification, object: nil)
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    @objc private func handleDidBecomeActiveNotification() {
+        implementation?.handleDidBecomeActiveNotification()
+    }
+
+    @objc private func handleDidEnterBackgroundNotification() {
+        implementation?.handleDidEnterBackgroundNotification()
+    }
 
     @objc func configure(_ call: CAPPluginCall) {
-        guard let options = call.options else {
-            call.reject("Options are missing")
-            return
-        }
+        var config = BiometricLockConfiguration()
+        config.timeoutInSeconds = call.getInt("timeoutInSeconds", config.timeoutInSeconds)
+        config.enabled = call.getBool("enabled", config.enabled)
+        config.appName = call.getString("appName", config.appName)
+        config.retryButtonColor = call.getString("retryButtonColor", config.retryButtonColor)
 
-        do {
-            let configData = try JSONSerialization.data(withJSONObject: options, options: [])
-            let config = try JSONDecoder().decode(BiometricLockConfiguration.self, from: configData)
+        implementation?.configure(with: config)
 
-            // Implement the configuration logic here using BiometricLockConfiguration
-            implementation.configure(with: config)
-            call.resolve()
-        } catch {
-            call.reject("Error decoding options: \(error.localizedDescription)")
-        }
+        getConfiguration(call)
     }
 
     @objc func getConfiguration(_ call: CAPPluginCall) {
-        let config = implementation.getConfiguration()
-        call.resolve(["configuration": config])
+        let config = implementation?.getConfiguration() ?? BiometricLockConfiguration()
+
+        call.resolve([
+            "enabled": config.enabled,
+            "timeoutInSeconds": config.timeoutInSeconds,
+            "appName": config.appName,
+            "retryButtonColor": config.retryButtonColor
+        ])
     }
 
     @objc func getBiometricMethod(_ call: CAPPluginCall) {
-        let method = implementation.getBiometricMethod()
+        let method = implementation?.getBiometricMethod() ?? 0
         call.resolve(["biometricMethod": method])
     }
 }
