@@ -15,6 +15,24 @@ public class BiometricLockPlugin extends Plugin {
          implementation = new BiometricLock(this);
     }
 
+    @Override
+    protected void handleOnStop() {
+        if (implementation != null) {
+            implementation.onStop();
+        }
+
+        super.handleOnStop();
+    }
+
+    @Override
+    protected void handleOnStart() {
+        if (implementation != null) {
+            implementation.onResume();
+        }
+
+        super.handleOnStart();
+    }
+
     @PluginMethod
     public void configure(PluginCall call) {
         BiometricLockConfiguration config = new BiometricLockConfiguration();
