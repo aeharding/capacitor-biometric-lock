@@ -3,27 +3,61 @@ package com.mycompany.plugins.example;
 import android.annotation.SuppressLint;
 import android.app.KeyguardManager;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
 import android.hardware.biometrics.BiometricManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
 import java.util.concurrent.Executor;
 
 public class AuthActivity extends AppCompatActivity {
-
+    public static BiometricLockPlugin plugin;
     static boolean allowDeviceCredential;
+
+    boolean authenticated = false;
+
+    private Button retryButton;
 
     @SuppressLint("WrongConstant")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_auth);
+
+        retryButton = findViewById(R.id.retryButton);
+
+        applyBlurEffect();
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Execute your function after a delay (e.g., after 1000 milliseconds = 1 second)
+                authenticate();
+            }
+        }, 100);
+
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                authenticate();
+            }
+        });
+    }
+
+    void authenticate() {
+        hideRetryButton();
 
         Executor executor;
 
@@ -98,11 +132,8 @@ public class AuthActivity extends AppCompatActivity {
                             @NonNull CharSequence errorMessage
                     ) {
                         super.onAuthenticationError(errorCode, errorMessage);
-                        finishActivity(
-//                                BiometryResultType.ERROR,
-//                                errorCode,
-//                                (String) errorMessage
-                        );
+
+                        showRetryButton();
                     }
 
                     @Override
@@ -118,27 +149,51 @@ public class AuthActivity extends AppCompatActivity {
         prompt.authenticate(promptInfo);
     }
 
-    void finishActivity() {
-//        finishActivity(BiometryResultType.SUCCESS, 0, "");
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (authenticated) return;
+
+        finishAffinity();
     }
 
-//    void finishActivity(
-//            BiometryResultType resultType,
-//            int errorCode,
-//            String errorMessage
-//    ) {
-//        Intent intent = new Intent();
-//        String prefix = BiometricAuthNative.RESULT_EXTRA_PREFIX;
-//
-//        intent
-//                .putExtra(prefix + BiometricAuthNative.RESULT_TYPE, resultType.toString())
-//                .putExtra(prefix + BiometricAuthNative.RESULT_ERROR_CODE, errorCode)
-//                .putExtra(
-//                        prefix + BiometricAuthNative.RESULT_ERROR_MESSAGE,
-//                        errorMessage
-//                );
-//
-//        setResult(RESULT_OK, intent);
-//        finish();
-//    }
+    void finishActivity() {
+        undoBlurEffect();
+        authenticated = true;
+        finish();
+    }
+
+    static public void applyBlurEffect() {
+        // Check if the device supports the blur effect
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Apply blur effect
+            plugin.getBridge().getWebView().setRenderEffect(
+                    RenderEffect.createBlurEffect(50, 50, Shader.TileMode.CLAMP)
+            );
+        } else {
+            // If the blur effect is not supported, set background color to grey
+            plugin.getBridge().getWebView().setBackgroundColor(plugin.getContext().getResources().getColor(android.R.color.darker_gray));
+        }
+    }
+
+    static public void undoBlurEffect() {
+        // Clear render effect
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            plugin.getBridge().getWebView().setRenderEffect(null);
+        }
+
+        // Reset background color to default or any other color you prefer
+        plugin.getBridge().getWebView().setBackgroundColor(Color.TRANSPARENT);
+    }
+
+    // Example method to show the retry button
+    private void showRetryButton() {
+        retryButton.setVisibility(View.VISIBLE);
+    }
+
+    // Example method to hide the retry button
+    private void hideRetryButton() {
+        retryButton.setVisibility(View.GONE);
+    }
 }

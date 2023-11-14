@@ -25,8 +25,6 @@ import java.util.ArrayList;
 public class BiometricLock {
     private final BiometricLockPlugin plugin;
     private BiometricLockConfiguration config;
-//    private PrivacyProtectionWindow privacyProtectionWindow;
-
 
     public static final String MAX_ATTEMPTS = "androidMaxAttempts";
     public static final int DEFAULT_MAX_ATTEMPTS = 3;
@@ -54,11 +52,6 @@ public class BiometricLock {
 //        this.privacyProtectionWindow = new PrivacyProtectionWindow(plugin);
 //        this.privacyProtectionWindow.show();
         authenticate();
-
-
-        plugin.getBridge().getWebView().setRenderEffect(
-                RenderEffect.createBlurEffect(50, 50, Shader.TileMode.CLAMP)
-        );
     }
 
     public void showPrivacyProtectionWindowIfNeeded() {
@@ -96,7 +89,9 @@ public class BiometricLock {
         // Just in case the developer does something dumb like using a number < 1...
         intent.putExtra(MAX_ATTEMPTS, DEFAULT_MAX_ATTEMPTS);
 
+        AuthActivity.plugin = plugin;
         plugin.getActivity().startActivity(intent);
+
     }
 
     public void configure(BiometricLockConfiguration options) {
@@ -188,7 +183,6 @@ public class BiometricLock {
         window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 }
-
 
 enum BiometryType {
     NONE(0),
