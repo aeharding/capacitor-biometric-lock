@@ -112,8 +112,7 @@ enum AuthResult {
     private var privacyProtectionVC: PrivacyProtectionViewController?
 
     private func showPrivacyProtectionWindowIfNeeded() {
-        guard config.enabled else { return }
-        guard getBiometricMethod() != 0 else { return }
+        guard config.enabled, getBiometricMethod() != 0 else { return }
 
         privacyProtectionWindow = UIWindow(frame: UIScreen.main.bounds)
         privacyProtectionVC = PrivacyProtectionViewController(appName: config.appName, retryButtonColor: config.retryButtonColor)
