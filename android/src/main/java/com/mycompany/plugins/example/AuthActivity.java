@@ -22,10 +22,7 @@ import java.util.concurrent.Executor;
 
 public class AuthActivity extends AppCompatActivity {
     public static BiometricLockPlugin plugin;
-    static boolean allowDeviceCredential;
-
     boolean authenticated = false;
-
     private Button retryButton;
 
     @SuppressLint("WrongConstant")
@@ -57,6 +54,11 @@ public class AuthActivity extends AppCompatActivity {
     }
 
     void authenticate() {
+        if (BiometricLock.getBiometricMethod(plugin) == BiometricLockPlugin.BiometryType.NONE.getType()) {
+            finishActivity();
+            return;
+        }
+
         hideRetryButton();
 
         Executor executor;
@@ -70,10 +72,7 @@ public class AuthActivity extends AppCompatActivity {
         BiometricPrompt.PromptInfo.Builder builder =
                 new BiometricPrompt.PromptInfo.Builder();
         Intent intent = getIntent();
-        String title = "Hi";
-        String subtitle = "Sub";
-        String description = "Reeason";
-        allowDeviceCredential = false;
+        var allowDeviceCredential = false;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             // Android docs say we should check if the device is secure before enabling device credential fallback
@@ -86,12 +85,7 @@ public class AuthActivity extends AppCompatActivity {
             }
         }
 
-        // The title must be non-null and non-empty
-        if (title == null || title.isEmpty()) {
-            title = "Authenticate";
-        }
-
-        builder.setTitle(title).setSubtitle(subtitle).setDescription(description);
+        builder.setTitle("Unlock App");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             int authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK;
@@ -105,21 +99,7 @@ public class AuthActivity extends AppCompatActivity {
             builder.setDeviceCredentialAllowed(allowDeviceCredential);
         }
 
-        // Android docs say that negative button text should not be set if device credential is allowed
-        if (!allowDeviceCredential) {
-//            String negativeButtonText = intent.getStringExtra(
-//                    BiometricAuthNative.CANCEL_TITLE
-//            );
-//            builder.setNegativeButtonText(
-//                    negativeButtonText == null || negativeButtonText.isEmpty()
-//                            ? "Cancel"
-//                            : negativeButtonText
-//            );
-        }
-
-//        builder.setConfirmationRequired(
-//                intent.getBooleanExtra(BiometricAuthNative.CONFIRMATION_REQUIRED, true)
-//        );
+        builder.setConfirmationRequired(false);
 
         BiometricPrompt.PromptInfo promptInfo = builder.build();
         BiometricPrompt prompt = new BiometricPrompt(
