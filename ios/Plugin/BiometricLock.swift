@@ -50,7 +50,7 @@ enum AuthResult {
     }
 
     @objc public func handleDidEnterBackgroundNotification() {
-        guard config.enabled else { return }
+        guard config.enabled, getBiometricMethod() != 0 else { return }
 
         inBackground = true
         authResult = nil
@@ -61,7 +61,7 @@ enum AuthResult {
     @objc public func handleDidBecomeActiveNotification() {
         switch authResult {
         case .success:
-            hidePrivacyProtectionWindow()
+            hidePrivacyProtectionWindowIfNeeded()
             dateSentToBackground = nil
             authResult = nil
         case .fail:
@@ -74,7 +74,7 @@ enum AuthResult {
             inBackground = false
 
             if let dateSentToBackground = dateSentToBackground, isDateGreaterThanDurationAgo(date: dateSentToBackground, durationInSeconds: config.timeoutInSeconds) {
-                hidePrivacyProtectionWindow()
+                hidePrivacyProtectionWindowIfNeeded()
                 self.dateSentToBackground = nil
                 authResult = nil
                 return
@@ -86,7 +86,10 @@ enum AuthResult {
     }
 
     private func authenticate() {
-        guard config.enabled else { return }
+        guard config.enabled, getBiometricMethod() != 0 else {
+            hidePrivacyProtectionWindowIfNeeded()
+            return
+        }
 
         let context = LAContext()
 
@@ -110,6 +113,7 @@ enum AuthResult {
 
     private func showPrivacyProtectionWindowIfNeeded() {
         guard config.enabled else { return }
+        guard getBiometricMethod() != 0 else { return }
 
         privacyProtectionWindow = UIWindow(frame: UIScreen.main.bounds)
         privacyProtectionVC = PrivacyProtectionViewController(appName: config.appName, retryButtonColor: config.retryButtonColor)
@@ -122,7 +126,7 @@ enum AuthResult {
         }
     }
 
-    private func hidePrivacyProtectionWindow() {
+    private func hidePrivacyProtectionWindowIfNeeded() {
         guard self.privacyProtectionWindow != nil else { return }
 
         UIView.animate(withDuration: 0.3, animations: {
