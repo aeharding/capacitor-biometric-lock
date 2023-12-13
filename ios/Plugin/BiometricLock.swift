@@ -38,15 +38,19 @@ enum AuthResult {
 
     // Method to get the primary biometric method
     func getBiometricMethod() -> Int {
-      let context = LAContext()
-      var error: NSError?
-      let available = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
+        let context = LAContext()
+        var error: NSError?
 
-      if !available {
-          return 0;
-      }
+        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+            return context.biometryType.rawValue
+        }
 
-      return context.biometryType.rawValue
+        // If lockout, return biometry type
+        if let biometryLockoutError = error, biometryLockoutError.code == kLAErrorBiometryLockout {
+            return context.biometryType.rawValue
+        }
+
+        return 0
     }
 
     @objc public func handleDidEnterBackgroundNotification() {
