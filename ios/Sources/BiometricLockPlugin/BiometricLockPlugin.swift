@@ -6,7 +6,14 @@ import Capacitor
  * here: https://capacitorjs.com/docs/plugins/ios
  */
 @objc(BiometricLockPlugin)
-public class BiometricLockPlugin: CAPPlugin {
+public class BiometricLockPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "BiometricLockPlugin" 
+    public let jsName = "BiometricLock" 
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "configure", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getConfiguration", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getBiometricMethod", returnType: CAPPluginReturnPromise),
+    ] 
     private var implementation: BiometricLock?
 
     override public func load() {
